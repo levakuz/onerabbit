@@ -1,3 +1,6 @@
 [submodule "amqpcpp"]
 	path = amqpcpp
 	url = https://github.com/akalend/amqpcpp
+[submodule "3rdparty/amqpcpp"]
+	path = 3rdparty/amqpcpp
+	url = https://github.com/akalend/amqpcpp
