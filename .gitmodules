@@ -1,0 +1,3 @@
+[submodule "amqpcpp"]
+	path = amqpcpp
+	url = https://github.com/akalend/amqpcpp
