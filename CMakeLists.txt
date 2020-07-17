@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 2.8.3)
 project(onerabbit)
 
 ## Compile as C++11, supported in ROS Kinetic and newer
-add_compile_options(-std=c++11 -lrabbitmq -lrt -lssl -lamqpcpp -L<~/amqpcpp> -I/usr/include -L/usr/lib -lamqpcpp -Isrc)
+add_compile_options(-std=c++11 -lrabbitmq -lrt -lssl -lamqpcpp -L<include/amqpcpp> -I/usr/include -L/usr/lib -lamqpcpp -Isrc)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
