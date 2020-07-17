@@ -2,6 +2,8 @@
 #include "geometry_msgs/PoseStamped.h"
 #include "AMQPcpp.h"
 #include <tf/transform_listener.h>
+#include <chrono>
+#include <ctime>
 using namespace std;
 int i=0;
 int k =0;
@@ -19,8 +21,9 @@ int  onMessage( AMQPMessage * message) {
 
 	cout << "#" << i << " tag="<< message->getDeliveryTag() << " content-type:"<< message->getHeader("Content-type") ;
 	cout << " encoding:"<< message->getHeader("Content-encoding")<< " mode="<<message->getHeader("Delivery-mode")<<endl;
+
 	k=0;
-	if (data=="1"){
+	if (data=="1"){  
 		
  			while(n.ok()){
 				geometry_msgs::PoseStamped poseStamped;
@@ -34,8 +37,7 @@ int  onMessage( AMQPMessage * message) {
 				poseStamped.pose.position.z=0.0;
 
 				poseStamped.pose.orientation.w=1.0;
-		
-			//ROS_INFO("Move to position:\n"
+	//ROS_INFO("Move to position:\n"
 			//	 "1) pos.linear: x=%f y=%f z=%f\n"
 			//	 "1) pos.angular: x=%f y=%f z=%f\n",
 	//			 poseStamped.pose.position.x, poseStamped.pose.position.y, poseStamped.pose.position.z,);
@@ -49,14 +51,20 @@ int  onMessage( AMQPMessage * message) {
 					loop_rate.sleep();
 					
 						}
+			
+
 				
 				
 
 	}
 
-	if (data=="True"){
+	if (data=="True"){/*time_t sec = time(NULL);
+tm* t = localtime(&sec);
+cout<<"Текущее время и дата:"<<asctime(t)<<endl;
+cout<<ros::Time::now()<<endl;*/
 		
- 			while(n.ok()){
+ 			while(n.ok()){				
+
 				geometry_msgs::PoseStamped poseStamped;
 		 		string data = message->getMessage(&j);
 				poseStamped.header.stamp=ros::Time::now();
@@ -75,6 +83,10 @@ int  onMessage( AMQPMessage * message) {
 	//			 poseStamped.pose.position.x, poseStamped.pose.position.y, poseStamped.pose.position.z,);
 					pub.publish(poseStamped);
 					cout << "Еду" << endl;
+				time_t seconds = time(NULL);
+tm* timeinfo = localtime(&seconds);
+cout<<"Текущее время и дата:"<<asctime(timeinfo)<<endl;
+
 					k++;
 					if (k==5)
 						break;
@@ -83,7 +95,7 @@ int  onMessage( AMQPMessage * message) {
 					loop_rate.sleep();
 					
 						}
-				
+
 				
 
 	}

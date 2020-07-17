@@ -15,14 +15,14 @@ int main (int argc, char** argv) {
     //ros::Rate rate(1.0);
     tf::StampedTransform transform;
 
-    AMQP amqp("test:test@localhost:5672");
+    AMQP amqp("admin:admin@192.168.0.17:5672");
     AMQPExchange * ex = amqp.createExchange("ros");
     ex->Declare("ros", "topic");
 
-    AMQPQueue * qu2 = amqp.createQueue("ros");
+    AMQPQueue * qu2 = amqp.createQueue("coordinates");
     qu2->Declare();
     qu2->Bind( "ros", "");
-    ex->setHeader("Delivery-mode", 2);
+    ex->setHeader("Delivery-mode", 1);
     ex->setHeader("Content-type", "text/text");
     ex->setHeader("Content-encoding", "UTF-8");
 
@@ -37,7 +37,11 @@ int main (int argc, char** argv) {
  
             ROS_INFO("Got a transform! x = %f, y = %f",transform.getOrigin().x(),transform.getOrigin().y());
 	    string str_x = to_string(transform.getOrigin().x());
-	    string str_y = to_string(transform.getOrigin().y());			
+	    string str_y = to_string(transform.getOrigin().y());
+	    string x ="x.";
+	    string y ="y.";
+	    str_x= x + str_x;
+	    str_y = y + str_y;
 	    ex->Publish(str_x, ""); 
 	    ex->Publish(str_y, ""); 
             //nav_msgs::OccupancyGrid = ros::topic::waitForMessage<nav_msgs::OccupancyGrid>("/map");
