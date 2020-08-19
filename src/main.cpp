@@ -5,8 +5,11 @@
 #include "nav_msgs/OccupancyGrid.h"
 #include <iostream>
 #include <fstream>
-using namespace std;
+#include <nlohmann/json.hpp>
 
+
+using namespace std;
+using json = nlohmann::json;
 
 int main (int argc, char** argv) {
     ros::init(argc, argv, "onerabbit");	
@@ -25,27 +28,51 @@ int main (int argc, char** argv) {
     ex->setHeader("Delivery-mode", 1);
     ex->setHeader("Content-type", "text/text");
     ex->setHeader("Content-encoding", "UTF-8");
+    
+    float old_x = 1;
+    float old_y = 1;
+    float x;
+    float y;
+    json info;
 
     
     while (n.ok())
     { 
-        tf::StampedTransform transform;
+        
 
         try{
+	    
 
             listener.lookupTransform("/map","/base_link",ros::Time(0), transform);
  
             ROS_INFO("Got a transform! x = %f, y = %f",transform.getOrigin().x(),transform.getOrigin().y());
-	    string str_x = to_string(transform.getOrigin().x());
-	    string str_y = to_string(transform.getOrigin().y());
-	    string x ="x.";
-	    string y ="y.";
-	    str_x= x + str_x;
-	    str_y = y + str_y;
-	    ex->Publish(str_x, ""); 
-	    ex->Publish(str_y, ""); 
+	    
+	    string id = "id.1,";
+	    x = transform.getOrigin().x();
+	    y = transform.getOrigin().y();
+
+            if(abs(old_x-x) >=0.01 || abs(old_y-y) >=0.01){
+	      string str_x = to_string(x);
+	      string str_y = to_string(y);
+
+	      old_x = x;
+	      old_y = y;
+	      info["id"]= "1";
+	      info["x"] = str_x;
+              info ["y"] = str_y;
+              string str_info = info.dump();
+   	      cout<<(str_info);
+	   
+              string coordinates = id + "x." + str_x + "," + "y." + str_y;
+	      ex->Publish(str_info, ""); 
+	    }
+
+  	    
+	    //string coordinates = i + "x." + str_x + "," + "y." + str_y;
+	    //ex->Publish(coordinates, ""); 
             //nav_msgs::OccupancyGrid = ros::topic::waitForMessage<nav_msgs::OccupancyGrid>("/map");
-            boost::shared_ptr<nav_msgs::OccupancyGrid const> sharedPtr;
+
+	    boost::shared_ptr<nav_msgs::OccupancyGrid const> sharedPtr;
             sharedPtr  = ros::topic::waitForMessage<nav_msgs::OccupancyGrid>("/map", ros::Duration(10));
 
             }

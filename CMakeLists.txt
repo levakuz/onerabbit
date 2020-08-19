@@ -171,6 +171,8 @@ amqpcpp-static PUBLIC include
 add_executable(send_coordinates src/main.cpp)
 add_executable(send_map src/map2.cpp)
 add_executable(go_to_position src/go_to_position.cpp)
+add_executable(send_battery src/battery_charge_info.cpp)
+add_executable(send_scan src/get_scan.cpp)
 
 ## Rename C++ executable without prefix
 ## The above recommended prefix causes long target names, the following renames the
@@ -184,6 +186,15 @@ add_executable(go_to_position src/go_to_position.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(send_coordinates
+${catkin_LIBRARIES}
+amqpcpp rabbitmq ssl crypto
+amqpcpp-static rabbitmq ssl crypto
+amqpcpp rabbitmq ssl crypto
+amqpcpp-static rabbitmq ssl crypto
+
+ )
+
+target_link_libraries(send_battery
 ${catkin_LIBRARIES}
 amqpcpp rabbitmq ssl crypto
 amqpcpp-static rabbitmq ssl crypto
@@ -208,6 +219,13 @@ amqpcpp-static rabbitmq ssl crypto
 amqpcpp rabbitmq ssl crypto
 amqpcpp-static rabbitmq ssl crypto
 
+ )
+target_link_libraries(send_scan
+${catkin_LIBRARIES}
+amqpcpp rabbitmq ssl crypto
+amqpcpp-static rabbitmq ssl crypto
+amqpcpp rabbitmq ssl crypto
+amqpcpp-static rabbitmq ssl crypto
  )
 
 #############
