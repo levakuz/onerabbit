@@ -5,30 +5,33 @@
 #include <iostream>
 #include <fstream>
 #include "AMQPcpp.h"
+#include <nlohmann/json.hpp>
 using namespace std;
+using json = nlohmann::json;
 int rows;
 int cols;
 double mapResolution;
 vector<vector<bool> > grid;
-
-
+json info;
 
 
 
 void recive(const nav_msgs::OccupancyGrid& msg){
-     AMQP amqp("test:test@localhost:5672");
+     AMQP amqp("admin:admin@192.168.0.17:5672");
      AMQPExchange * ex = amqp.createExchange("map2");
      ex->Declare("map2", "fanout");
      ex->setHeader("Delivery-mode", 2);
      ex->setHeader("Content-type", "text/text");
      ex->setHeader("Content-encoding", "UTF-8"); 
-     AMQPQueue * qu2 = amqp.createQueue("map2");
+     AMQPQueue * qu2 = amqp.createQueue("robot_map");
      qu2->Declare();
      qu2->Bind( "map2", "");	
 
      
       rows = msg.info.height;
  cols = msg.info.width;
+ info["cols"] = to_string(cols);
+ info ["rows"] = to_string(rows);
  mapResolution = msg.info.resolution;
  // Dynamically resize the grid
  grid.resize(rows);
@@ -54,11 +57,17 @@ void recive(const nav_msgs::OccupancyGrid& msg){
  for (int j = 0; j < cols; j++)
  {
  printf("%d ", grid[i][j] ? 1 : 0);
- ex->Publish(to_string(grid[i][j] ? 1 : 0), "");
+ //ex->Publish(to_string(grid[i][j] ? 1 : 0), "");
  }
  printf("\n");
  }
- ex->Publish("end", "");   
+
+for (int i = 0; i < rows; i++){
+   //ex->Publish("Row." + to_string(i), "");
+   info[to_string(i)] = grid[i];}
+ string str_info = info.dump();
+ ex->Publish(str_info, "");
+ //ex->Publish("end", "");   
 ROS_INFO("Received a %d X %d map @ %.3f m/px\n",
  msg.info.width,
  msg.info.height,
@@ -77,9 +86,3 @@ int main(int argc, char** argv)
  ros::spinOnce();
  return 0;
 }
-
-
-
-
-
-
