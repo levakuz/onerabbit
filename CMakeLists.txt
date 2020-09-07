@@ -168,6 +168,8 @@ amqpcpp-static PUBLIC include
 ## Declare a C++ executable
 ## With catkin_make all packages are built within a single CMake context
 ## The recommended prefix ensures that target names across packages don't collide
+add_executable(move_position src/go_to_position_test.cpp)
+add_executable(actionlib_move src/go_to_position_json.cpp)
 add_executable(send_coordinates src/main.cpp)
 add_executable(send_map src/map2.cpp)
 add_executable(go_to_position src/go_to_position.cpp)
@@ -185,6 +187,24 @@ add_executable(send_scan src/get_scan.cpp)
 # add_dependencies(${PROJECT_NAME}_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 
 ## Specify libraries to link a library or executable target against
+target_link_libraries(actionlib_move
+${catkin_LIBRARIES}
+amqpcpp rabbitmq ssl crypto
+amqpcpp-static rabbitmq ssl crypto
+amqpcpp rabbitmq ssl crypto
+amqpcpp-static rabbitmq ssl crypto
+
+ )
+
+target_link_libraries(move_position
+${catkin_LIBRARIES}
+amqpcpp rabbitmq ssl crypto
+amqpcpp-static rabbitmq ssl crypto
+amqpcpp rabbitmq ssl crypto
+amqpcpp-static rabbitmq ssl crypto
+
+ )
+
 target_link_libraries(send_coordinates
 ${catkin_LIBRARIES}
 amqpcpp rabbitmq ssl crypto
