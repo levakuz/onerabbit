@@ -28,8 +28,6 @@ int  onMessage( AMQPMessage * message) {
 	k=0;
 	while(k!=5){
 	  if (data=="01"){  
-		
-
 			geometry_msgs::PoseStamped poseStamped;
 		 	string data = message->getMessage(&j);
 			poseStamped.header.stamp=ros::Time::now();
@@ -45,22 +43,9 @@ int  onMessage( AMQPMessage * message) {
 
 			pub.publish(poseStamped);
 			cout << "Еду" << endl;
- 
-						
-
-					
 	  } 
-	
-			
-
-				
-				
-
-	
 
 	  else if (data=="True"){
-		
- 						
 
 			geometry_msgs::PoseStamped poseStamped;
 		 	string data = message->getMessage(&j);
@@ -81,8 +66,8 @@ int  onMessage( AMQPMessage * message) {
 	  }
 	  
     ros::spinOnce();
-	r.sleep();
-	++k;
+	  r.sleep();
+	  ++k;
 		
 	}
 	

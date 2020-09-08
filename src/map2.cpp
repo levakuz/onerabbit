@@ -44,9 +44,9 @@ void recive(const nav_msgs::OccupancyGrid& msg){
       if (msg.data[currCell] == 0){ // unoccupied cell
         grid[i][j] = false;}
       else{
-        grid[i][j] = true; // occupied (100) or unknown cell (-1)
+        grid[i][j] = true;} // occupied (100) or unknown cell (-1)
         currCell++;
-      }
+      
     }  
   }
   printf("Grid map:\n");
@@ -65,7 +65,8 @@ void recive(const nav_msgs::OccupancyGrid& msg){
 
   for (int i = 0; i < rows; i++){
     //ex->Publish("Row." + to_string(i), "");
-    info[to_string(i)] = grid[i];}
+    info[to_string(i)] = grid[i];
+  }
     string str_info = info.dump();
     ex->Publish(str_info, "");
     //ex->Publish("end", "");   
