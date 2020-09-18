@@ -85,7 +85,7 @@ int main(int argc, char** argv)
  ros::init(argc, argv, "load_ogm");
  ros::NodeHandle nh;
  ros::Rate rate(10);
- ros::Subscriber sub = nh.subscribe("/map", 1000, recive);
+ ros::Subscriber sub = nh.subscribe("/move_base/global_costmap/costmap", 1000, recive);
  rate.sleep();
  ros::spinOnce();
  return 0;
