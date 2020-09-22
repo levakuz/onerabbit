@@ -11,10 +11,11 @@
 
 using namespace std;
 
-float x_start_point = -1.76;
-float y_start_point = 0.851;
-float distance_from_table = 1.0;
-float coefficient_of_check = 3;
+float x_start_point = 0.5;
+float y_start_point = -1.53;
+float distance_from_table = 0.1;
+float coefficient_of_check = 20.0;
+float step_of_check = 0.0001;
 
 
 class Table{
@@ -48,7 +49,7 @@ class Table{
     bool is_third_point_reachable = true;
     bool is_fourth_point_reachable = true;
 
-    vector<vector<bool> > grid_global;
+    vector<vector<int> > grid_global;
 
     tf2::Quaternion first_point_angle;
     tf2::Quaternion second_point_angle;
@@ -79,11 +80,7 @@ class Table{
       int a = 0;
       for (int i = 0; i < rows; i++) {
         for (int j = 0; j < cols; j++) {
-          if (planner_points.data[currCell] == 0){ // unoccupied cell
-            grid_global[i][j] = false;}
-          else{
-            grid_global[i][j] = true;
-            } // occupied (100) or unknown cell (-1)
+          grid_global[i][j] = planner_points.data[currCell];
           currCell++;
           //cout<< rows<<endl;
           //cout<< cols<<endl;
@@ -108,10 +105,18 @@ class Table{
         calculated_pixel_y = center_y + (y_first_point / mapResolution);
         cout<< "calculated pixel_x_fp "<<calculated_pixel_x<<endl;
         cout<< "calculated pixel_y_fp "<<calculated_pixel_y<<endl;
-        if (grid_global[calculated_pixel_y][calculated_pixel_x] == true ){
+        if (calculated_pixel_y == 1600 )
+          {
+            y_first_point = y + distance_from_table;
+            x_first_point = x;
+            break;
+          }
+        if (grid_global[calculated_pixel_y][calculated_pixel_x] != 0){
           //cout<<"calculate again"<<endl;
           //cout<<x_first_point<<endl;
-          y_first_point += 0.01; 
+          y_first_point += step_of_check;
+          
+           
         }
         else{ break;}
       }
@@ -137,10 +142,17 @@ class Table{
         calculated_pixel_y = center_y + ( y_second_point / mapResolution);    
         cout<<calculated_pixel_x<<endl;
         cout<<calculated_pixel_y<<endl;
-        if (grid_global[calculated_pixel_y][calculated_pixel_x ] == true ){
+          if (calculated_pixel_x == 1600 )
+          {
+             x_second_point = x + distance_from_table;
+            y_second_point = y;
+            break;
+          }
+        if (grid_global[calculated_pixel_y][calculated_pixel_x] != 0 ){
           //cout<<"calculate again"<<endl;
           //cout<<x_first_point<<endl;
-          x_second_point += 0.01; 
+          x_second_point += step_of_check; 
+
         }
        else { break;}
       }
@@ -167,11 +179,16 @@ class Table{
         calculated_pixel_y = center_y + (y_third_point / mapResolution);
         cout<<calculated_pixel_x<<endl;
         cout<<calculated_pixel_y<<endl;
-        
-        if (grid_global[calculated_pixel_y][calculated_pixel_x] == true ){
+        if (calculated_pixel_y == 0)
+          { x_third_point = x;
+            y_third_point = y - distance_from_table;
+            break;
+          }
+        if (grid_global[calculated_pixel_y][calculated_pixel_x] != 0  ){
           //cout<<"calculate again"<<endl;
           //cout<<x_first_point<<endl;
-          y_third_point -= 0.01; 
+          y_third_point -= step_of_check; 
+
         }
         else{ break;}
       }
@@ -200,13 +217,17 @@ class Table{
         cout<<calculated_pixel_x<<endl;
         cout<<calculated_pixel_y<<endl;
         if (calculated_pixel_x == 0)
-        {
-          break;
-        }
-        if (grid_global[calculated_pixel_y][calculated_pixel_x] == true ){
+          { x_fourth_point = x - distance_from_table;
+            y_fourth_point = y;
+            break;
+          }
+
+          //cout<<x_first_point<<endl;
+        if (grid_global[calculated_pixel_y][calculated_pixel_x] != 0 ){
           //cout<<"calculate again"<<endl;
           //cout<<x_first_point<<endl;
-          x_fourth_point -= 0.01; 
+          x_fourth_point -= step_of_check; 
+
         }
         else{ break;}
       }
@@ -434,19 +455,18 @@ int  onMessage( AMQPMessage * message) {
                 goal.target_pose.pose.orientation.z=table[table_num].fourth_point_angle_msg.z;
                 if (table[table_num].is_third_point_reachable == true)
                 {  
-                ac.sendGoal(goal);
-                ac.waitForResult(ros::Duration(60.0));
-                cout<<"going to point 4"<<endl;
-                if (ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
-                  cout << "Robot is on table №" << data << endl;
+                  ac.sendGoal(goal);
+                  ac.waitForResult(ros::Duration(60.0));
+                  cout<<"going to point 4"<<endl;
+                  if (ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+                    cout << "Robot is on table №" << data << endl;
                 }
 
               
               else
 
                 printf("Can not reach the object\n");
-              
-              
+                            
             }
             
           }

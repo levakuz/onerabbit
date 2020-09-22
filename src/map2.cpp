@@ -11,7 +11,7 @@ using json = nlohmann::json;
 int rows;
 int cols;
 double mapResolution;
-vector<vector<bool> > grid;
+vector<vector<int> > grid;
 json info;
 
 
@@ -41,10 +41,9 @@ void recive(const nav_msgs::OccupancyGrid& msg){
   int currCell = 0;
   for (int i = 0; i < rows; i++) {
     for (int j = 0; j < cols; j++) {
-      if (msg.data[currCell] == 0){ // unoccupied cell
-        grid[i][j] = false;}
-      else{
-        grid[i][j] = true;} // occupied (100) or unknown cell (-1)
+
+        grid[i][j] = msg.data[currCell];
+      
         currCell++;
       
     }  
@@ -87,6 +86,6 @@ int main(int argc, char** argv)
  ros::Rate rate(10);
  ros::Subscriber sub = nh.subscribe("/move_base/global_costmap/costmap", 1000, recive);
  rate.sleep();
- ros::spinOnce();
+ ros::spin();
  return 0;
 }
