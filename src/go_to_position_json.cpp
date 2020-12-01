@@ -12,8 +12,8 @@
 
 using namespace std;
 
-float x_start_point = -3.85;
-float y_start_point = -3.86;
+float x_start_point = -4.5;
+float y_start_point = -2.6;
 float distance_from_table = 0.1;
 float coefficient_of_check = 20.0;
 float step_of_check = 0.0001;
@@ -298,7 +298,7 @@ int  onMessage( AMQPMessage * message) {
   
   
   cout<< data.length()<<endl;  
-  if(data.length() > 4){
+  if(data.length() > 10){
     try
     {
       std::vector<std::string> results;
@@ -380,7 +380,7 @@ int  onMessage( AMQPMessage * message) {
     }
   }
 
-  else if(data.length()<5){
+  else if(data.length()<10){
     
     try
     {
@@ -394,6 +394,11 @@ int  onMessage( AMQPMessage * message) {
         cout << "Еду домой" << endl;
         ac.sendGoal(goal);
         ac.waitForResult(ros::Duration(60.0));
+		      
+        }
+      else if (data == "False"){  //Получен неверный заказ
+        cout << "Получен неверный заказ" << endl;
+
 		      
         }
 
