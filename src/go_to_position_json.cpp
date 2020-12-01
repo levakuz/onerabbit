@@ -8,11 +8,12 @@
 #include <nav_msgs/OccupancyGrid.h>
 #include <boost/shared_ptr.hpp>
 #include <tf2/LinearMath/Quaternion.h>
+#include <ctime>
 
 using namespace std;
 
-float x_start_point = 0.5;
-float y_start_point = -1.53;
+float x_start_point = -3.85;
+float y_start_point = -3.86;
 float distance_from_table = 0.1;
 float coefficient_of_check = 20.0;
 float step_of_check = 0.0001;
@@ -92,6 +93,7 @@ class Table{
 
 
     void calculate_first_point(){
+      unsigned int start_time =  clock();
       int calculated_pixel_x;
       int calculated_pixel_y;
       center_x = rows / 2;
@@ -103,9 +105,9 @@ class Table{
       while(true){
         calculated_pixel_x =center_x + ( x_first_point / mapResolution);
         calculated_pixel_y = center_y + (y_first_point / mapResolution);
-        cout<< "calculated pixel_x_fp "<<calculated_pixel_x<<endl;
-        cout<< "calculated pixel_y_fp "<<calculated_pixel_y<<endl;
-        if (calculated_pixel_y == 1600 )
+        //cout<< "calculated pixel_x_fp "<<calculated_pixel_x<<endl;
+        //cout<< "calculated pixel_y_fp "<<calculated_pixel_y<<endl;
+        if (calculated_pixel_y == rows )
           {
             y_first_point = y + distance_from_table;
             x_first_point = x;
@@ -123,13 +125,18 @@ class Table{
       if (y_first_point > y + distance_from_table*coefficient_of_check)
       {
         is_first_point_reachable = false;
+
       }
-            
+      unsigned int end_time = clock();
+      unsigned int search_time = end_time - start_time;
+      cout<<"Время поиска первой точки: "<<search_time<<endl;
+      cout << "Точка в допустимой области? "<< is_first_point_reachable << endl; 
+      
     }
    
 
     void calculate_second_point(){
-      
+      unsigned int start_time =  clock();
       int calculated_pixel_x;
       int calculated_pixel_y;
 
@@ -140,15 +147,16 @@ class Table{
       while(true){
         calculated_pixel_x =center_x + (x_second_point / mapResolution);
         calculated_pixel_y = center_y + ( y_second_point / mapResolution);    
-        cout<<calculated_pixel_x<<endl;
-        cout<<calculated_pixel_y<<endl;
-          if (calculated_pixel_x == 1600 )
+        //cout<<calculated_pixel_x<<endl;
+        //cout<<calculated_pixel_y<<endl;
+          if (calculated_pixel_x == cols )
           {
              x_second_point = x + distance_from_table;
             y_second_point = y;
             break;
           }
         if (grid_global[calculated_pixel_y][calculated_pixel_x] != 0 ){
+          //cout<<grid_global[calculated_pixel_y][calculated_pixel_x]<<endl;
           //cout<<"calculate again"<<endl;
           //cout<<x_first_point<<endl;
           x_second_point += step_of_check; 
@@ -159,13 +167,19 @@ class Table{
       if (x_second_point > x + distance_from_table*coefficient_of_check)
       {
         is_second_point_reachable = false;
+        
+
       }
+      unsigned int end_time = clock();
+      unsigned int search_time = end_time - start_time;
+      cout<<"Время поиска второй точки: "<<search_time<<endl;
+      cout << "Точка в допустимой области? "<< is_second_point_reachable << endl;       
     }
     
 
     void calculate_third_point(){
-
-      
+      unsigned int start_time =  clock();
+    
       int calculated_pixel_x;
       int calculated_pixel_y;
       
@@ -173,12 +187,12 @@ class Table{
       x_third_point = x;
       y_third_point = y - distance_from_table;
 
-      //check global planner
+      
       while(true){
         calculated_pixel_x =center_x + (x_third_point / mapResolution);
         calculated_pixel_y = center_y + (y_third_point / mapResolution);
-        cout<<calculated_pixel_x<<endl;
-        cout<<calculated_pixel_y<<endl;
+        //cout<<calculated_pixel_x<<endl;
+        //cout<<calculated_pixel_y<<endl;
         if (calculated_pixel_y == 0)
           { x_third_point = x;
             y_third_point = y - distance_from_table;
@@ -196,12 +210,17 @@ class Table{
       if (y_third_point < y - distance_from_table*coefficient_of_check)
       {
         is_third_point_reachable = false;
+        
       }
+      unsigned int end_time = clock();
+      unsigned int search_time = end_time - start_time;
+      cout<<"Время поиска третьей точки: "<<search_time<<endl;
+      cout << "Точка в допустимой области? "<< is_third_point_reachable << endl; 
     }
 
 
     void calculate_fourth_point(){
-      
+      unsigned int start_time =  clock();
       
       int calculated_pixel_x;
       int calculated_pixel_y;
@@ -210,12 +229,11 @@ class Table{
       x_fourth_point = x - distance_from_table;
       y_fourth_point = y;
 
-      //check global planner
       while(true){
         calculated_pixel_x =center_x + (x_fourth_point / mapResolution);
         calculated_pixel_y = center_y + (y_fourth_point / mapResolution);
-        cout<<calculated_pixel_x<<endl;
-        cout<<calculated_pixel_y<<endl;
+        //cout<<calculated_pixel_x<<endl;
+        //cout<<calculated_pixel_y<<endl;
         if (calculated_pixel_x == 0)
           { x_fourth_point = x - distance_from_table;
             y_fourth_point = y;
@@ -234,7 +252,12 @@ class Table{
       if (x_fourth_point < x - distance_from_table*coefficient_of_check)
       {
         is_fourth_point_reachable = false;
+         
       }
+      unsigned int end_time = clock();
+      unsigned int search_time = end_time - start_time;
+      cout<<"Время поиска четвертой точки: "<<search_time<<endl;
+      cout << "Точка в допустимой области? "<< is_fourth_point_reachable << endl;
     }
 
     void calculate_angles(){
@@ -288,24 +311,26 @@ int  onMessage( AMQPMessage * message) {
       boost::split(results, data, [](char c){return c == ',';});
       boost::split(tableinfo, results[0], [](char c){return c == ':';});
       boost::split(keyinfo, results[1], [](char c){return c == ':';});
-      boost::split(xinfo, results[2], [](char c){return c == ':';});
-      boost::split(yinfo, results[3], [](char c){return c == ':';});
-
-      
-      cout<<"table "<< tableinfo[1]<<endl;
-      cout<<"x "<< xinfo[1]<<endl;
-      cout<<"y "<< yinfo[1]<<endl;
-
-
-      float x = stof(xinfo[1]);
-      float y = stof(yinfo[1]);
-
-      cout<<stof(xinfo[1])<<endl;
-      cout<<stof(yinfo[1])<<endl;
-      cout<<stoi(tableinfo[1])<<endl;
+    
       
       
       if(keyinfo[1] == "create"){
+        boost::split(xinfo, results[2], [](char c){return c == ':';});
+        boost::split(yinfo, results[3], [](char c){return c == ':';});
+
+      
+        cout<<"table "<< tableinfo[1]<<endl;
+        cout<<"x "<< xinfo[1]<<endl;
+        cout<<"y "<< yinfo[1]<<endl;
+
+
+        float x = stof(xinfo[1]);
+        float y = stof(yinfo[1]);
+
+        cout<<stof(xinfo[1])<<endl;
+        cout<<stof(yinfo[1])<<endl;
+        cout<<stoi(tableinfo[1])<<endl;
+
         table[stoi(tableinfo[1])].x = x;
         table[stoi(tableinfo[1])].y = y;
         table[stoi(tableinfo[1])].check_global_planer();
@@ -453,7 +478,7 @@ int  onMessage( AMQPMessage * message) {
                 goal.target_pose.pose.orientation.x=table[table_num].fourth_point_angle_msg.x;
                 goal.target_pose.pose.orientation.y=table[table_num].fourth_point_angle_msg.y;
                 goal.target_pose.pose.orientation.z=table[table_num].fourth_point_angle_msg.z;
-                if (table[table_num].is_third_point_reachable == true)
+                if (table[table_num].is_fourth_point_reachable == true)
                 {  
                   ac.sendGoal(goal);
                   ac.waitForResult(ros::Duration(60.0));
