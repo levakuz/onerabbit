@@ -12,12 +12,12 @@
 
 using namespace std;
 
-float x_start_point = -4.5;
-float y_start_point = -2.6;
-float distance_from_table = 0.1;
-float coefficient_of_check = 20.0;
+float x_start_point = -6;
+float y_start_point = -3.6;
+float distance_from_table = 1.0;
+float coefficient_of_check = 1.0;
 float step_of_check = 0.0001;
-
+AMQP amqp("admin:admin@95.181.230.223:5672");
 
 class Table{
   public:
@@ -280,10 +280,10 @@ class Table{
 
 
     }  
-
+  
 };
 
-Table table[20];
+Table table[500];
 typedef actionlib::SimpleActionClient<move_base_msgs::MoveBaseAction> MoveBaseClient;
 
 
@@ -394,6 +394,18 @@ int  onMessage( AMQPMessage * message) {
         cout << "Еду домой" << endl;
         ac.sendGoal(goal);
         ac.waitForResult(ros::Duration(60.0));
+        if (ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
+              cout << "На базе" << data << endl;
+              AMQPExchange * ex = amqp.createExchange("ros");
+              ex->Declare("ros", "topic");
+              AMQPQueue * qu3 = amqp.createQueue("robot_on_start_point");
+              qu3->Declare();
+              qu3->Bind( "ros", "robot_on_start_point");
+              ex->setHeader("Delivery-mode", 1);
+              ex->setHeader("Content-type", "text/text");
+              ex->setHeader("Content-encoding", "UTF-8");
+              ex->Publish("True", "robot_on_start_point"); 
+
 		      
         }
       else if (data == "False"){  //Получен неверный заказ
@@ -537,11 +549,11 @@ int main(int argc, char** argv)
   while(!ac.waitForServer(ros::Duration(5.0))){
     ROS_INFO("Waiting for the move_base action server to come up");
   }
-  AMQP amqp("admin:admin@95.181.230.223:5672");
-
   AMQPQueue * qu2 = amqp.createQueue("robot_delivery_order");
   qu2->Declare();		
   qu2->addEvent(AMQP_MESSAGE, onMessage );
   qu2->Consume(AMQP_NOACK);
+  
+  
 
 }
