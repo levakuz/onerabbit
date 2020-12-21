@@ -9,19 +9,22 @@
 #include <boost/shared_ptr.hpp>
 #include <tf2/LinearMath/Quaternion.h>
 #include <ctime>
-
+#include <std_srvs/Empty.h>
 using namespace std;
 
-float x_start_point = -6;
-float y_start_point = -3.6;
-float distance_from_table = 1.0;
-float coefficient_of_check = 1.0;
+
+
+float x_start_point = 3.5;
+float y_start_point = -3.4;
+float distance_from_table = 0.5;
+float coefficient_of_check = 3.0;
 float step_of_check = 0.0001;
+std_srvs::Empty emptymsg;
 AMQP amqp("admin:admin@95.181.230.223:5672");
 
 class Table{
   public:
-
+    
     float x;
     float y;
 
@@ -113,7 +116,7 @@ class Table{
             x_first_point = x;
             break;
           }
-        if (grid_global[calculated_pixel_y][calculated_pixel_x] != 0){
+        if (grid_global[calculated_pixel_y][calculated_pixel_x] >30){
           //cout<<"calculate again"<<endl;
           //cout<<x_first_point<<endl;
           y_first_point += step_of_check;
@@ -155,7 +158,7 @@ class Table{
             y_second_point = y;
             break;
           }
-        if (grid_global[calculated_pixel_y][calculated_pixel_x] != 0 ){
+        if (grid_global[calculated_pixel_y][calculated_pixel_x] > 30 ){
           //cout<<grid_global[calculated_pixel_y][calculated_pixel_x]<<endl;
           //cout<<"calculate again"<<endl;
           //cout<<x_first_point<<endl;
@@ -198,7 +201,7 @@ class Table{
             y_third_point = y - distance_from_table;
             break;
           }
-        if (grid_global[calculated_pixel_y][calculated_pixel_x] != 0  ){
+        if (grid_global[calculated_pixel_y][calculated_pixel_x] > 30  ){
           //cout<<"calculate again"<<endl;
           //cout<<x_first_point<<endl;
           y_third_point -= step_of_check; 
@@ -241,7 +244,7 @@ class Table{
           }
 
           //cout<<x_first_point<<endl;
-        if (grid_global[calculated_pixel_y][calculated_pixel_x] != 0 ){
+        if (grid_global[calculated_pixel_y][calculated_pixel_x] > 30 ){
           //cout<<"calculate again"<<endl;
           //cout<<x_first_point<<endl;
           x_fourth_point -= step_of_check; 
@@ -266,7 +269,7 @@ class Table{
       first_point_angle.normalize();
       first_point_angle_msg = tf2::toMsg(first_point_angle);
 
-      second_point_angle.setRPY( 0, 0, 1.5708 );
+      second_point_angle.setRPY( 0, 0, 1.5708*2);
       second_point_angle.normalize();
       second_point_angle_msg = tf2::toMsg(second_point_angle);
 
@@ -274,7 +277,7 @@ class Table{
       third_point_angle.normalize();
       third_point_angle_msg = tf2::toMsg(third_point_angle);
 
-      fourth_point_angle.setRPY( 0, 0, 1.5708);
+      fourth_point_angle.setRPY( 0, 0, 1.5708*2);
       fourth_point_angle.normalize();
       fourth_point_angle_msg = tf2::toMsg(fourth_point_angle);
 
@@ -381,10 +384,12 @@ int  onMessage( AMQPMessage * message) {
   }
 
   else if(data.length()<10){
+    cout<<"here"<<endl;
+    cout<<data<<endl;
     
     try
     {
-      if (data == "True"){  //Получен верный заказ
+      if (data == "True" || data == "\"True\""){  //Получен верный заказ
         goal.target_pose.header.stamp=ros::Time::now();
 	      goal.target_pose.header.frame_id="map";
         goal.target_pose.pose.position.x=x_start_point;
@@ -392,6 +397,7 @@ int  onMessage( AMQPMessage * message) {
 	      goal.target_pose.pose.position.z=0.0;
         goal.target_pose.pose.orientation.w=1.0;
         cout << "Еду домой" << endl;
+        ros::service::call("/move_base/clear_costmaps",emptymsg);
         ac.sendGoal(goal);
         ac.waitForResult(ros::Duration(60.0));
         if (ac.getState() == actionlib::SimpleClientGoalState::SUCCEEDED)
@@ -428,7 +434,8 @@ int  onMessage( AMQPMessage * message) {
           goal.target_pose.pose.orientation.y=table[table_num].first_point_angle_msg.y;
           goal.target_pose.pose.orientation.z=table[table_num].first_point_angle_msg.z;
           if (table[table_num].is_first_point_reachable == true)
-          {  
+          { 
+            ros::service::call("/move_base/clear_costmaps",emptymsg); 
             ac.sendGoal(goal);
             ac.waitForResult(ros::Duration(60.0));
             cout<<"going to point 1"<<endl;
@@ -445,12 +452,13 @@ int  onMessage( AMQPMessage * message) {
             goal.target_pose.pose.position.x=table[table_num].x_second_point;
 	          goal.target_pose.pose.position.y=table[table_num].y_second_point;;
 	          goal.target_pose.pose.position.z=0.0;
-            goal.target_pose.pose.orientation.w=table[table_num].second_point_angle_msg.w;
-            goal.target_pose.pose.orientation.x=table[table_num].second_point_angle_msg.x;
-            goal.target_pose.pose.orientation.y=table[table_num].second_point_angle_msg.y;
-            goal.target_pose.pose.orientation.z=table[table_num].second_point_angle_msg.z;
+            goal.target_pose.pose.orientation.w=table[table_num].first_point_angle_msg.w;
+            goal.target_pose.pose.orientation.x=table[table_num].first_point_angle_msg.x;
+            goal.target_pose.pose.orientation.y=table[table_num].first_point_angle_msg.y;
+            goal.target_pose.pose.orientation.z=table[table_num].first_point_angle_msg.z;
             if (table[table_num].is_second_point_reachable == true)
-            {
+            { 
+              ros::service::call("/move_base/clear_costmaps",emptymsg);
               ac.sendGoal(goal);
               ac.waitForResult(ros::Duration(60.0)); 
               cout<<"going to point 2"<<endl;
@@ -473,7 +481,8 @@ int  onMessage( AMQPMessage * message) {
               goal.target_pose.pose.orientation.y=table[table_num].third_point_angle_msg.y;
               goal.target_pose.pose.orientation.z=table[table_num].third_point_angle_msg.z;
               if (table[table_num].is_third_point_reachable == true)
-              {   
+              { 
+                ros::service::call("/move_base/clear_costmaps",emptymsg);  
                 ac.sendGoal(goal);
                 ac.waitForResult(ros::Duration(60.0)); 
                 cout<<"going to point 3"<<endl;
@@ -496,7 +505,8 @@ int  onMessage( AMQPMessage * message) {
                 goal.target_pose.pose.orientation.y=table[table_num].fourth_point_angle_msg.y;
                 goal.target_pose.pose.orientation.z=table[table_num].fourth_point_angle_msg.z;
                 if (table[table_num].is_fourth_point_reachable == true)
-                {  
+                { 
+                  ros::service::call("/move_base/clear_costmaps",emptymsg); 
                   ac.sendGoal(goal);
                   ac.waitForResult(ros::Duration(60.0));
                   cout<<"going to point 4"<<endl;
@@ -540,7 +550,7 @@ int  onMessage( AMQPMessage * message) {
 int main(int argc, char** argv)
 {
   ros::init(argc, argv, "actionlib_move");
-  ros::NodeHandle nh();
+  ros::NodeHandle nh;
   /*nh.getParam("xstart", x_start_point);
   nh.getParam("ystart", y_start_point);
   nh.getParam("distance", distance_from_table);
@@ -553,7 +563,10 @@ int main(int argc, char** argv)
   qu2->Declare();		
   qu2->addEvent(AMQP_MESSAGE, onMessage );
   qu2->Consume(AMQP_NOACK);
-  
-  
+  while(nh.ok()){
 
+  }
+  
+  
+  return 0;
 }
