@@ -118,39 +118,39 @@ int  onMessage( AMQPMessage * message) {
       while (k!=5)
       {
         if (data == "True"){  //Получен верный заказ
-		      poseStamped.header.stamp=ros::Time::now();
-		      poseStamped.header.frame_id="map";
+	  poseStamped.header.stamp=ros::Time::now();
+	  poseStamped.header.frame_id="map";
           poseStamped.pose.position.x=7.0;
-		      poseStamped.pose.position.y=-3.0;
-		      poseStamped.pose.position.z=0.0;
+	  poseStamped.pose.position.y=-3.0;
+	  poseStamped.pose.position.z=0.0;
 
-		      poseStamped.pose.orientation.w=1.0;
+	  poseStamped.pose.orientation.w=1.0;
           pub.publish(poseStamped);
-		      cout << "Еду домой" << endl;
+	  cout << "Еду домой" << endl;
         }   
      
         else{
 
           int table_num = stoi(data);	 		
-		      poseStamped.header.stamp=ros::Time::now();
-		      poseStamped.header.frame_id="map";
+	  poseStamped.header.stamp=ros::Time::now();
+	  poseStamped.header.frame_id="map";
 
-		      cout<<table[table_num].x_first_point<< endl;
+	  cout<<table[table_num].x_first_point<< endl;
           cout<<table[table_num].y_first_point<< endl;
-  		    poseStamped.pose.position.x=table[table_num].x_fourth_point;
-	  	    poseStamped.pose.position.y=table[table_num].y_fourth_point;
-		      poseStamped.pose.position.z=0.0;
+  	  poseStamped.pose.position.x=table[table_num].x_fourth_point;
+	  poseStamped.pose.position.y=table[table_num].y_fourth_point;
+	  poseStamped.pose.position.z=0.0;
 
-		      poseStamped.pose.orientation.w=1.0;
-		      //poseStamped.pose.orientation.z=-0.827;
+	  poseStamped.pose.orientation.w=1.0;
+	  //poseStamped.pose.orientation.z=-0.827;
           //poseStamped.pose.orientation.x=-1.0;
 
-		      pub.publish(poseStamped);
-		      cout << "Еду" << endl;
+	  pub.publish(poseStamped);
+	  cout << "Еду" << endl;
 
         }
       ros::spinOnce();
-		  r.sleep();
+      r.sleep();
       ++k;      
       }  
     }
